@@ -1,0 +1,1 @@
+{{cookiecutter.project_slug|lower}}.run_nuke()
