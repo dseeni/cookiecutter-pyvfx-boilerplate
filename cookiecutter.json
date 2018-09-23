@@ -3,6 +3,6 @@
     "project_description": "",
     "author": "Mel Massadian",
     "window_title": "{{cookiecutter.project_slug}}",
-    "dock_in_maya": ["False","True"],
-    "dock_in_nuke": ["False","True"]
+    "dock_in_maya": ["True", "False"],
+    "dock_in_nuke": ["True", "False"]
 }

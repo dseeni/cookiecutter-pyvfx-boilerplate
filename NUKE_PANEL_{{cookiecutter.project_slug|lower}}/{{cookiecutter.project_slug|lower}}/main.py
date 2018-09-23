@@ -177,9 +177,7 @@ def run_standalone():
     """
     app = QtWidgets.QApplication(sys.argv)
     boil = {{cookiecutter.project_slug}}()
-    if not (platform.system() == 'Darwin' and
-            (QtCompat.__binding__ == 'PySide' or QtCompat.__binding__ == 'PyQt4')):
-        mayapalette.set_maya_palette_with_tweaks(PALETTE_FILEPATH)
+    mayapalette.set_maya_palette_with_tweaks(PALETTE_FILEPATH)
     boil.show()  # Show the UI
     sys.exit(app.exec_())
 
