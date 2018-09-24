@@ -2,6 +2,7 @@
     "project_slug": "project",
     "project_description": "",
     "author": "Mel Massadian",
+    "prefix": "VFX_PANEL",
     "window_title": "{{cookiecutter.project_slug}}",
     "dock_in_maya": ["True", "False"],
     "dock_in_nuke": ["True", "False"]

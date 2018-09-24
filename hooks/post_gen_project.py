@@ -1,5 +1,5 @@
 INFO = """
-NUKE_PANEL_{{cookiecutter.project_slug|lower}} successfully created.
+{{cookiecutter.prefix}}_{{cookiecutter.project_slug|lower}} successfully created.
 
 FOR MAYA:
 
@@ -8,7 +8,7 @@ import {{cookiecutter.project_slug|lower}}.main as {{cookiecutter.project_slug|l
 {{cookiecutter.project_slug|lower}}.run_maya()
 
 FOR NUKE:
-simply move the NUKE_PANEL_{{cookiecutter.project_slug|lower}} folder to NUKEPATH
+simply move the {{cookiecutter.prefix}}_{{cookiecutter.project_slug|lower}} folder to $NUKEPATH
 
 STANDALONE:
 import {{cookiecutter.project_slug|lower}}.main as {{cookiecutter.project_slug|lower}}
