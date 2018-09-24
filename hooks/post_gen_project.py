@@ -1,5 +1,5 @@
 INFO = """
-NUKE_PANEL_{{cookiecutter.project_slug|uppercase}} successfully created.
+NUKE_PANEL_{{cookiecutter.project_slug|lower}} successfully created.
 
 FOR MAYA:
 
