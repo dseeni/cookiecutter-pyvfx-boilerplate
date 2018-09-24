@@ -1,6 +1,5 @@
 here="$(dirname `realpath $0`)"
-export PYTHONPATH="$here:$PYTHONPATH"
-maya
+PYTHONPATH="$here:$PYTHONPATH" maya
 
 #
 # add this to you shell:

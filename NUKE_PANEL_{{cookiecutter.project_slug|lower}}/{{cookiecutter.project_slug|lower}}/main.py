@@ -116,7 +116,7 @@ class {{cookiecutter.project_slug}}(QtWidgets.QMainWindow):
 
     def event(self, event):
 
-        if event.type() == QtCore.QEvent.Type.Show:
+        if event.type() == QtCore.QEvent.Show:
             try:
                 _nuke_set_zero_margins(self)
             except:
