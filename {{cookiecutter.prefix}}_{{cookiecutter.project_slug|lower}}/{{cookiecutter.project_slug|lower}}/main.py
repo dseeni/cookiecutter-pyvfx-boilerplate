@@ -14,27 +14,6 @@ import platform
 sys.dont_write_bytecode = True  # Avoid writing .pyc files
 
 # ----------------------------------------------------------------------
-# Environment detection
-# ----------------------------------------------------------------------
-
-try:
-    import maya.cmds as cmds
-    MAYA = True
-except ImportError:
-    MAYA = False
-
-try:
-    import nuke
-    import nukescripts
-    NUKE = True
-except ImportError:
-    NUKE = False
-
-STANDALONE = False
-if not MAYA and not NUKE:
-    STANDALONE = True
-
-# ----------------------------------------------------------------------
 # Configuration
 # ----------------------------------------------------------------------
 
@@ -61,6 +40,30 @@ PALETTE_FILEPATH = os.path.join(UI_PATH, 'qpalette_maya2016.json')
 # os.environ['QT_PREFERRED_BINDING'] = 'PyQt5'
 # os.environ['QT_PREFERRED_BINDING'] = 'PySide2'
 
+# ----------------------------------------------------------------------
+# Environment detection
+# ----------------------------------------------------------------------
+
+try:
+    from maya import cmds
+    MAYA = True
+
+except ImportError:
+    MAYA = False
+
+try:
+    import nuke
+    import nukescripts
+    NUKE = True
+
+except ImportError:
+    NUKE = False
+
+STANDALONE = False
+if not MAYA and not NUKE:
+    STANDALONE = True
+
+
 
 # ----------------------------------------------------------------------
 # Main script
@@ -74,21 +77,20 @@ from .lib import mayapalette
 from .lib.dcc import *
 
 
-class {{cookiecutter.project_slug}}(QtWidgets.QMainWindow):
+class {{cookiecutter.project_slug}}(QtWidgets.QWidget):
     """
     {{cookiecutter.project_description}}
     """
 
     def __init__(self, parent=None):
 
+        self.deleteInstances()
+
         super({{cookiecutter.project_slug}}, self).__init__(parent)
 
         # Set object name and window title
         self.setObjectName(WINDOW_OBJECT)
         self.setWindowTitle(WINDOW_TITLE)
-
-        # Window type
-        self.setWindowFlags(QtCore.Qt.Window)
 
         if MAYA:
             # Makes Maya perform magic which makes the window stay
@@ -97,18 +99,15 @@ class {{cookiecutter.project_slug}}(QtWidgets.QMainWindow):
             self.setProperty("saveWindowPref", True)
 
         # Filepaths
-        main_window_file = os.path.join(UI_PATH, 'main_window.ui')
+        main_window_file = os.path.join(UI_PATH, 'main.ui')
         module_file = os.path.join(UI_PATH, 'module.ui')
 
         # Load UIs
-        self.main_widget = QtCompat.load_ui(main_window_file)  # Main window UI
+        self.main_widget = QtCompat.load_ui(main_window_file, self)  # Main window UI
         self.module_widget = QtCompat.load_ui(module_file)  # Module UI
 
-        # Attach module to main window UI's boilerVerticalLayout layout
-        self.main_widget.boilerVerticalLayout.addWidget(self.module_widget)
-
-        # Set the main widget
-        self.setCentralWidget(self.main_widget)
+        # Attach module to main window UI's layout
+        self.main_widget.layout().addWidget(self.module_widget)
 
         # Define minimum size of UI
         self.setMinimumSize(200, 200)
@@ -117,12 +116,18 @@ class {{cookiecutter.project_slug}}(QtWidgets.QMainWindow):
     def event(self, event):
 
         if event.type() == QtCore.QEvent.Show:
-            try:
-                _nuke_set_zero_margins(self)
-            except:
-                pass
+            if NUKE:
+                _nuke_set_zero_margins(self) # remove margins in nuke.
 
-        return QtWidgets.QMainWindow.event(self, event)
+        return super({{cookiecutter.project_slug}}, self).event(event)
+
+    def deleteInstances(self):
+        """Delete any already existing UI"""
+        if MAYA:
+            return # handled by the Dock wrapper.
+            # _maya_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)
+        elif NUKE:
+            _nuke_delete_ui(WINDOW_OBJECT)
 
 # ----------------------------------------------------------------------
 # Run functions
@@ -130,20 +135,12 @@ class {{cookiecutter.project_slug}}(QtWidgets.QMainWindow):
 
 def run_maya():
     """Run in Maya"""
-    _maya_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing existing UI
-    boil = {{cookiecutter.project_slug}}(parent=_maya_main_window())
+    if DOCK_WITH_MAYA_UI:
+        widget = Dock({{cookiecutter.project_slug}})
 
-    # Makes Maya perform magic which makes the window stay
-    # on top in OS X and Linux. As an added bonus, it'll
-    # make Maya remember the window position
-    boil.setProperty("saveWindowPref", True)
-
-    if not DOCK_WITH_MAYA_UI:
-        boil.show()  # Show the UI
-    elif DOCK_WITH_MAYA_UI:
-        allowed_areas = ['right', 'left']
-        cmds.dockControl(WINDOW_TITLE, label=WINDOW_TITLE, area='left',
-                         content=WINDOW_OBJECT, allowedArea=allowed_areas)
+    else:
+        widget = {{cookiecutter.project_slug}}(parent=_maya_main_window())
+        widget.show()
 
 
 def run_nuke():
@@ -158,7 +155,6 @@ def run_nuke():
         If you want the UI to be modal:
         `boil.ui.setWindowModality(QtCore.Qt.WindowModal)`
     """
-    _nuke_delete_ui(WINDOW_OBJECT)  # Delete any alrady existing UI
     if not DOCK_WITH_NUKE_UI:
         boil = {{cookiecutter.project_slug}}(parent=_nuke_main_window())
         boil.setWindowFlags(QtCore.Qt.Tool)
@@ -169,7 +165,6 @@ def run_nuke():
             name=WINDOW_TITLE,
             id='uk.co.thefoundry.' + WINDOW_TITLE,
             create=True)
-
 
 
 def run_standalone():

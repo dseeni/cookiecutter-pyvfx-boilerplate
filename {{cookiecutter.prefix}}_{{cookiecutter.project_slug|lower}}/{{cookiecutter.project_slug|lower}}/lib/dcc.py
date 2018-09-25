@@ -2,13 +2,13 @@ from ..extern.Qt import QtWidgets  # pylint: disable=E0611
 from ..extern.Qt import QtCore     # pylint: disable=E0611
 from ..extern.Qt import QtCompat
 
-__all__ = ["_maya_delete_ui","_nuke_delete_ui","_maya_main_window","_nuke_main_window","_nuke_set_zero_margins"]
+__all__ = ["Dock", "_maya_delete_ui","_nuke_delete_ui","_maya_main_window","_nuke_main_window","_nuke_set_zero_margins"]
 # ----------------------------------------------------------------------
 # Environment detection
 # ----------------------------------------------------------------------
 
 try:
-    import maya.cmds as cmds
+    from maya import cmds, OpenMayaUI as omui
     MAYA = True
 except ImportError:
     MAYA = False
@@ -28,6 +28,52 @@ if not MAYA and not NUKE:
 # DCC application helper functions
 # ----------------------------------------------------------------------
 
+def Dock(Widget, width=300, show=True):
+    """Dock `Widget` into Maya
+    Arguments:
+        Widget (QWidget): Class
+        show (bool, optional): Whether to show the resulting dock once created
+    """
+
+    name = Widget.__name__
+    label = getattr(Widget, "label", name)
+
+    try:
+        cmds.deleteUI(name)
+    except RuntimeError:
+        pass
+
+    dockControl = cmds.workspaceControl(
+        name,
+        tabToControl=["Outliner", -1],
+        initialWidth=width,
+        minimumWidth=True,
+        widthProperty="preferred",
+        label=label
+    )
+
+    dockPtr = omui.MQtUtil.findControl(dockControl)
+    dockWidget = QtCompat.wrapInstance(long(dockPtr), QtWidgets.QWidget)
+    dockWidget.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+    child = Widget(dockWidget)
+    print("The parent of mbar is:")
+    print(child.parent())
+    print("While the dockWidget is:")
+    print(dockWidget)
+
+    dockWidget.layout().addWidget(child)
+
+    if show:
+        cmds.evalDeferred(
+            lambda *args: cmds.workspaceControl(
+                dockControl,
+                edit=True,
+                restore=True
+            )
+        )
+
+    return child
 
 def _maya_delete_ui(winobj, wintitle):
     """Delete existing UI in Maya"""
